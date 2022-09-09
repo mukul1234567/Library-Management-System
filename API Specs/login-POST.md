@@ -41,7 +41,7 @@ N/A
 }
 ```
 
-### Bad Request Response when Password validation failed
+### Bad Request Response when Invalid Username/Password received
 ```
 {
     "Message": "Invalid credentials"
