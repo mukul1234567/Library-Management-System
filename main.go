@@ -5,7 +5,7 @@ import (
 
 	"github.com/mukul1234567/Library-Management-System/app"
 	"github.com/mukul1234567/Library-Management-System/config"
-	"github.com/mukul1234567/Library-Management-System/db_user"
+	"github.com/mukul1234567/Library-Management-System/db"
 	"github.com/mukul1234567/Library-Management-System/server"
 	"github.com/urfave/cli"
 )
@@ -31,14 +31,14 @@ func main() {
 			Name:  "create_migration",
 			Usage: "create migration file",
 			Action: func(c *cli.Context) error {
-				return db_user.CreateMigrationFile(c.Args().Get(0))
+				return db.CreateMigrationFile(c.Args().Get(0))
 			},
 		},
 		{
 			Name:  "migrate",
 			Usage: "run db migrations",
 			Action: func(c *cli.Context) error {
-				err := db_user.RunMigrations()
+				err := db.RunMigrations()
 				return err
 			},
 		},
@@ -46,7 +46,7 @@ func main() {
 			Name:  "rollback",
 			Usage: "rollback migrations",
 			Action: func(c *cli.Context) error {
-				return db_user.RollbackMigrations(c.Args().Get(0))
+				return db.RollbackMigrations(c.Args().Get(0))
 			},
 		},
 	}
