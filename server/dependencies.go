@@ -5,11 +5,13 @@ import (
 	"github.com/mukul1234567/Library-Management-System/book"
 	"github.com/mukul1234567/Library-Management-System/db"
 	"github.com/mukul1234567/Library-Management-System/user"
+	"github.com/mukul1234567/Library-Management-System/transaction"
 )
 
 type dependencies struct {
 	UserService user.Service
 	BookService book.Service
+	TransactionService transaction.Service
 }
 
 func initDependencies() (dependencies, error) {
@@ -19,10 +21,12 @@ func initDependencies() (dependencies, error) {
 
 	userService := user.NewService(dbStore, logger)
 	bookService := book.NewService(dbStore, logger)
+	transactionService:=transaction.NewService(dbStore, logger)
 
 	return dependencies{
 		UserService: userService,
 		BookService: bookService,
+		TransactionService:transactionService,
 	}, nil
 
 }
