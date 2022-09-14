@@ -104,20 +104,6 @@ func (cs *transactionService) update(ctx context.Context, c updateRequest) (err 
 // 	return
 // }
 
-// func (cs *userService) deleteByID(ctx context.Context, id string) (err error) {
-// 	err = cs.store.DeleteUserByID(ctx, id)
-// 	if err == db.ErrUserNotExist {
-// 		cs.logger.Error("user Not present", "err", err.Error(), "id", id)
-// 		return errNoUserId
-// 	}
-// 	if err != nil {
-// 		cs.logger.Error("Error deleting user", "err", err.Error(), "id", id)
-// 		return
-// 	}
-
-// 	return
-// }
-
 func NewService(s db.Storer, l *zap.SugaredLogger) Service {
 	return &transactionService{
 		store:  s,
