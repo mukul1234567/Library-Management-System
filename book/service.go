@@ -2,9 +2,11 @@ package book
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/mukul1234567/Library-Management-System/db"
+	// "github.com/mukul1234567/Library-Management-System/transaction"
 	"go.uber.org/zap"
 )
 
@@ -54,6 +56,8 @@ func (cs *bookService) create(ctx context.Context, c createRequest) (err error) 
 		Status:          c.Status,
 		AvailableCopies: c.AvailableCopies,
 	})
+	// transaction.Availablecopiesval = c.AvailableCopies
+	fmt.Println(c.AvailableCopies)
 	if err != nil {
 		cs.logger.Error("Error creating book", "err", err.Error())
 		return
