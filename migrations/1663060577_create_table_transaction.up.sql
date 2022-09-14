@@ -1,8 +1,8 @@
  CREATE TABLE `Transactions`(
     `id` VARCHAR(40) NOT NULL,
-    `issuedate` VARCHAR(40) NOT NULL,
-    `returndate` VARCHAR(40) NOT NULL,
-    `actualreturndate` VARCHAR(40) NOT NULL,
+    `issuedate` INT NOT NULL,
+    `returndate` INT NOT NULL,
+    `duedate` INT NOT NULL,
     `book_id` VARCHAR(40) NOT NULL,
     `user_id` VARCHAR(40) NOT NULL,
     PRIMARY KEY(id),
