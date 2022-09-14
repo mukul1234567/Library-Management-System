@@ -71,22 +71,6 @@ func List(service Service) http.HandlerFunc {
 // 	})
 // }
 
-// func DeleteByID(service Service) http.HandlerFunc {
-// 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-// 		vars := mux.Vars(req)
-
-// 		err := service.deleteByID(req.Context(), vars["id"])
-// 		if err == errNoUserId {
-// 			api.Error(rw, http.StatusNotFound, api.Response{Message: err.Error()})
-// 		}
-// 		if err != nil {
-// 			api.Error(rw, http.StatusInternalServerError, api.Response{Message: err.Error()})
-// 			return
-// 		}
-
-// 		api.Success(rw, http.StatusOK, api.Response{Message: "Deleted Successfully"})
-// 	})
-// }
 
 func Update(service Service) http.HandlerFunc {
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
