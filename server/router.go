@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/mukul1234567/Library-Management-System/api"
 	"github.com/mukul1234567/Library-Management-System/book"
+	"github.com/mukul1234567/Library-Management-System/transaction"
 	"github.com/mukul1234567/Library-Management-System/user"
 )
 
@@ -14,7 +15,6 @@ const (
 )
 
 func initRouter(dep dependencies) (router *mux.Router) {
-	// v1 := fmt.Sprintf("application/vnd.%s.v1", config.AppName())
 
 	router = mux.NewRouter()
 	router.HandleFunc("/ping", pingHandler).Methods(http.MethodGet)
@@ -37,9 +37,9 @@ func initRouter(dep dependencies) (router *mux.Router) {
 
 	//Transaction
 
-	router.HandleFunc("/trans/{book_id}/{user_id}", book.Create(dep.BookService)).Methods(http.MethodPost)
-	router.HandleFunc("/trans", book.List(dep.BookService)).Methods(http.MethodGet)
-	router.HandleFunc("/trans/{book_id}/{user_id}", book.Update(dep.BookService)).Methods(http.MethodPut)
+	router.HandleFunc("/book/issue", transaction.Create(dep.TransactionService)).Methods(http.MethodPost)
+	router.HandleFunc("/book", transaction.List(dep.TransactionService)).Methods(http.MethodGet)
+	router.HandleFunc("/book/return", transaction.Update(dep.TransactionService)).Methods(http.MethodPut)
 
 	return
 }
