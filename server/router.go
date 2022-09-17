@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+
 	"github.com/mukul1234567/Library-Management-System/api"
 	"github.com/mukul1234567/Library-Management-System/book"
 	"github.com/mukul1234567/Library-Management-System/transaction"
@@ -20,26 +21,28 @@ func initRouter(dep dependencies) (router *mux.Router) {
 	router.HandleFunc("/ping", pingHandler).Methods(http.MethodGet)
 
 	//User
+	router.HandleFunc("/login", user.Login(dep.UserService)).Methods(http.MethodPost)
 
-	router.HandleFunc("/users", user.Create(dep.UserService)).Methods(http.MethodPost)
-	router.HandleFunc("/users", user.List(dep.UserService)).Methods(http.MethodGet)
-	router.HandleFunc("/users/{id}", user.FindByID(dep.UserService)).Methods(http.MethodGet)
-	router.HandleFunc("/users/{id}", user.DeleteByID(dep.UserService)).Methods(http.MethodDelete)
-	router.HandleFunc("/users", user.Update(dep.UserService)).Methods(http.MethodPut)
+	router.HandleFunc("/users", user.Authorize(user.Create(dep.UserService), 1)).Methods(http.MethodPost)
+	router.HandleFunc("/users", user.Authorize(user.List(dep.UserService), 1)).Methods(http.MethodGet)
+	router.HandleFunc("/users/{id}", user.Authorize(user.FindByID(dep.UserService), 2)).Methods(http.MethodGet)
+	router.HandleFunc("/users/{id}", user.Authorize(user.DeleteByID(dep.UserService), 1)).Methods(http.MethodDelete)
+	router.HandleFunc("/users", user.Authorize(user.Update(dep.UserService), 2)).Methods(http.MethodPut)
 
 	//Book
 
-	router.HandleFunc("/books", book.Create(dep.BookService)).Methods(http.MethodPost)
-	router.HandleFunc("/books", book.List(dep.BookService)).Methods(http.MethodGet)
-	router.HandleFunc("/books/{id}", book.FindByID(dep.BookService)).Methods(http.MethodGet)
-	router.HandleFunc("/books/{id}", book.DeleteByID(dep.BookService)).Methods(http.MethodDelete)
-	router.HandleFunc("/books", book.Update(dep.BookService)).Methods(http.MethodPut)
+	router.HandleFunc("/books", user.Authorize(book.Create(dep.BookService), 1)).Methods(http.MethodPost)
+	router.HandleFunc("/books", user.Authorize(book.List(dep.BookService), 2)).Methods(http.MethodGet)
+	router.HandleFunc("/books/{id}", user.Authorize(book.FindByID(dep.BookService), 2)).Methods(http.MethodGet)
+	router.HandleFunc("/books/{id}", user.Authorize(book.DeleteByID(dep.BookService), 1)).Methods(http.MethodDelete)
+	router.HandleFunc("/books", user.Authorize(book.Update(dep.BookService), 1)).Methods(http.MethodPut)
 
 	//Transaction
 
-	router.HandleFunc("/book/issue", transaction.Create(dep.TransactionService)).Methods(http.MethodPost)
-	router.HandleFunc("/book", transaction.List(dep.TransactionService)).Methods(http.MethodGet)
-	router.HandleFunc("/book/return", transaction.Update(dep.TransactionService)).Methods(http.MethodPut)
+	router.HandleFunc("/book/issue", user.Authorize(transaction.Create(dep.TransactionService), 1)).Methods(http.MethodPost)
+	router.HandleFunc("/book", user.Authorize(transaction.List(dep.TransactionService), 1)).Methods(http.MethodGet)
+	router.HandleFunc("/book/return", user.Authorize(transaction.Update(dep.TransactionService), 1)).Methods(http.MethodPut)
+	router.HandleFunc("/book/{book_id}", user.Authorize(transaction.FindByBookID(dep.TransactionService), 1)).Methods(http.MethodGet)
 
 	return
 }
