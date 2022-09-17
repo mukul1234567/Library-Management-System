@@ -21,6 +21,7 @@ type userService struct {
 	logger *zap.SugaredLogger
 }
 
+// var userinfo []db.User
 func (cs *userService) list(ctx context.Context) (response listResponse, err error) {
 	users, err := cs.store.ListUsers(ctx)
 	if err == db.ErrUserNotExist {
@@ -33,6 +34,7 @@ func (cs *userService) list(ctx context.Context) (response listResponse, err err
 	}
 
 	response.User = users
+	// userinfo = users
 	return
 }
 
@@ -70,7 +72,7 @@ func (cs *userService) update(ctx context.Context, c updateRequest) (err error) 
 		cs.logger.Error("Invalid Request for user update", "err", err.Error(), "user", c)
 		return
 	}
-
+	
 	err = cs.store.UpdateUser(ctx, &db.User{
 		ID:        c.ID,
 		FirstName: c.FirstName,
@@ -79,6 +81,7 @@ func (cs *userService) update(ctx context.Context, c updateRequest) (err error) 
 		Address:   c.Address,
 		Age:       c.Age,
 		Email:     c.Email,
+		// Password:  c.NewPassword,
 		Password:  c.Password,
 		MobileNum: c.MobileNum,
 		Role:      c.Role,
