@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	// "fmt"
 	"database/sql"
 )
 
@@ -18,10 +19,11 @@ type Book struct {
 const (
 	createBookQuery = `INSERT INTO Books (id,name,author,price,totalcopies,status,availablecopies)
 	VALUES(?, ?,?,?,?,?,?)`
-	listBooksQuery      = `SELECT * FROM Books`
-	findBookByIDQuery   = `SELECT * FROM Books WHERE id = ?`
-	deleteBookByIDQuery = `DELETE FROM Books WHERE id = ?`
-	updateBookQuery     = `UPDATE Books SET name = ?, author = ?, price=?, totalcopies=?, status=?, availablecopies=?  where id = ?`
+	// listBooksforUserQuery = `SELECT id,name,author,price,status FROM Books`
+	listBooksQuery        = `SELECT * FROM Books`
+	findBookByIDQuery     = `SELECT * FROM Books WHERE id = ?`
+	deleteBookByIDQuery   = `DELETE FROM Books WHERE id = ?`
+	updateBookQuery       = `UPDATE Books SET name = ?, author = ?, price=?, totalcopies=?, status=?, availablecopies=?  where id = ?`
 )
 
 func (s *store) CreateBook(ctx context.Context, book *Book) (err error) {
@@ -43,7 +45,8 @@ func (s *store) CreateBook(ctx context.Context, book *Book) (err error) {
 
 func (s *store) ListBooks(ctx context.Context) (books []Book, err error) {
 	err = WithDefaultTimeout(ctx, func(ctx context.Context) error {
-		return s.db.SelectContext(ctx, &books, listBooksQuery)
+			return s.db.SelectContext(ctx, &books, listBooksQuery)
+		
 	})
 	if err == sql.ErrNoRows {
 		return books, ErrBookNotExist
