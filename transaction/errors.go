@@ -8,5 +8,6 @@ var (
 	errNoUsers     = errors.New("No Users present")
 	errNoUserId    = errors.New("User is not present")
 	errNoBookId    = errors.New("Book is not present")
+	ErrBookAlreadyIssued = errors.New("Book has already been issued")
 )
 //
