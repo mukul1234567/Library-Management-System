@@ -21,8 +21,8 @@ type User struct {
 const (
 	createUserQuery = `INSERT INTO users (id,first_name, last_name, gender,age,address,email,password,mob_no,role)
 	VALUES(?, ?,?,?,?,?,?,?,?,?)`
-	listUsersQuery      = `SELECT * FROM users`
-	findUserByIDQuery   = `SELECT * FROM users WHERE id = ?`
+	listUsersQuery      = `SELECT id,first_name, last_name, gender,age,address,email,mob_no,role FROM users`
+	findUserByIDQuery   = `SELECT first_name, last_name, gender,age,address,email,mob_no,role FROM users WHERE id = ?`
 	deleteUserByIDQuery = `DELETE FROM users WHERE id = ?`
 	updateUserQuery     = `UPDATE users SET first_name=?, last_name=?, gender=?, age=?, address=?, password=?, mob_no=? where id = ?`
 )
