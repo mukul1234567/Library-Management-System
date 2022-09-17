@@ -3,7 +3,11 @@ package db
 import (
 	"context"
 	"database/sql"
+	// "fmt"
+
+	// "fmt"
 	"time"
+	// "github.com/mukul1234567/Library-Management-System/db"
 )
 
 type Transaction struct {
@@ -15,19 +19,37 @@ type Transaction struct {
 	UserID     string `db:"user_id"`
 }
 
+var Availablecopiesval int
+
 const (
 	createTransactionQuery = `INSERT INTO transactions (id,issuedate,duedate,returndate,book_id,user_id)
 	VALUES(?, ?,?,?,?,?)`
-	listTransactionsQuery = `SELECT * FROM transactions`
-	// findUserByIDQuery   = `SELECT * FROM users WHERE id = ?`
-	// deleteUserByIDQuery = `DELETE FROM users WHERE id = ?`
-	updateTransactionQuery = `UPDATE transactions SET returndate=? WHERE book_id = ? AND user_id =?`
+	checkTransactionQuery        = `SELECT COUNT(*) FROM transactions WHERE book_id = ? AND user_id =? AND returndate=0`
+	listTransactionsQuery        = `SELECT * FROM transactions`
+	findTransactionByBookIDQuery = `SELECT * FROM transactions WHERE book_id = ?`
+	findTransactionByUserIDQuery = `SELECT FROM transactions WHERE user_id = ?`
+	updateTransactionQuery       = `UPDATE transactions SET returndate=? WHERE book_id = ? AND user_id =?`
+	issueCopiesQuery             = `UPDATE books SET availablecopies=availablecopies-1 WHERE id = ? AND availablecopies>0`
+	returnCopiesQuery            = `UPDATE books SET availablecopies=availablecopies+1 WHERE id = ?`
 )
 
 func (s *store) CreateTransaction(ctx context.Context, transaction *Transaction) (err error) {
 	now := time.Now().UTC().Unix()
 	transaction.DueDate = int(now) + 864000
 	return Transact(ctx, s.db, &sql.TxOptions{}, func(ctx context.Context) error {
+		// res, err := s.db.Exec(
+		// 	checkTransactionQuery,
+		// 	transaction.BookID,
+		// 	transaction.UserID,
+		// )
+		// fmt.Println(res)
+		// if int(res) == 0 {
+		// 	return ErrBookAlreadyIssued
+		// }
+
+		if err != nil {
+			return err
+		}
 		_, err = s.db.Exec(
 			createTransactionQuery,
 			transaction.ID,
@@ -37,6 +59,17 @@ func (s *store) CreateTransaction(ctx context.Context, transaction *Transaction)
 			transaction.BookID,
 			transaction.UserID,
 		)
+		if err != nil {
+			return err
+		}
+		_, err := s.db.Exec(
+			issueCopiesQuery,
+			transaction.BookID,
+		)
+		// cnt,err:=res.RowsAffected()
+		// if cnt!=0{
+		// 	api.Success(rw, http.StatusCreated, api.Response{Message: "Created Successfully"})
+		// }
 		return err
 	})
 }
@@ -61,33 +94,27 @@ func (s *store) UpdateTransaction(ctx context.Context, transaction *Transaction)
 			transaction.BookID,
 			transaction.UserID,
 		)
+		if err != nil {
+			return err
+		}
+		_, err = s.db.Exec(
+			returnCopiesQuery,
+			transaction.BookID,
+		)
 		return err
 	})
 }
 
-// func (s *store) FindUserByID(ctx context.Context, id string) (user User, err error) {
-// 	err = WithDefaultTimeout(ctx, func(ctx context.Context) error {
-// 		return s.db.GetContext(ctx, &user, findUserByIDQuery, id)
-// 	})
-// 	if err == sql.ErrNoRows {
-// 		return user, ErrUserNotExist
-// 	}
-// 	return
-// }
+func (s *store) FindTransactionByBookID(ctx context.Context, bookid string) (transaction Transaction, err error) {
+	err = WithDefaultTimeout(ctx, func(ctx context.Context) error {
+		return s.db.GetContext(ctx, &transaction, findTransactionByBookIDQuery, bookid)
+	})
+	if err == sql.ErrNoRows {
+		return transaction, ErrTransactionNotExist
+	}
+	return
+}
 
-// func (s *store) DeleteUserByID(ctx context.Context, id string) (err error) {
-// 	return Transact(ctx, s.db, &sql.TxOptions{}, func(ctx context.Context) error {
-// 		res, err := s.db.Exec(deleteUserByIDQuery, id)
-// 		cnt, err := res.RowsAffected()
-// 		if cnt == 0 {
-// 			return ErrUserNotExist
-// 		}
-// 		if err != nil {
-// 			return err
-// 		}
-// 		return err
-// 	})
-// }
 // CREATE TABLE Users
 // (
 
@@ -122,3 +149,15 @@ func (s *store) UpdateTransaction(ctx context.Context, transaction *Transaction)
 // INSERT INTO transactions (book_id,user_id) VALUES("911bb240-4981-4e2c-b2f4-d1f3c7aa3268","d563e110-ac05-4904-be9c-1cbf42939833")
 // SELECT * FROM transactions
 // WHERE book_id = "911bb240-4981-4e2c-b2f4-d1f3c7aa3268" AND user_id = "d563e110-ac05-4904-be9c-1cbf42939833" AND returndate IS NOT NULL;
+
+// {
+//     "first_name": "Perooop",
+//     "last_name": "Ghhhhgfff",
+//     "gender": "Male",
+//     "age": 47,
+//     "address": "Pune",
+//     "email": "cntst@gmail.com",
+//     "password": "dtest@123",
+//     "mob_no": "9865327485",
+//     "role":"user"
+// }
