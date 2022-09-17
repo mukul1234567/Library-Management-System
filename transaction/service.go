@@ -15,7 +15,7 @@ import (
 type Service interface {
 	list(ctx context.Context) (response listResponse, err error)
 	create(ctx context.Context, req createRequest) (err error)
-	// findByID(ctx context.Context, id string) (response findByIDResponse, err error)
+	findByBookID(ctx context.Context, id string) (response findByBookIDResponse, err error)
 	// deleteByID(ctx context.Context, id string) (err error)
 	update(ctx context.Context, req updateRequest) (err error)
 }
@@ -62,7 +62,7 @@ func (cs *transactionService) create(ctx context.Context, c createRequest) (err 
 		cs.logger.Error("Error creating transaction", "err", err.Error())
 		return
 	}
-	// Availablecopiesval = Availablecopiesval - 1
+
 	return
 }
 
@@ -89,20 +89,20 @@ func (cs *transactionService) update(ctx context.Context, c updateRequest) (err 
 	return
 }
 
-// func (cs *userService) findByID(ctx context.Context, id string) (response findByIDResponse, err error) {
-// 	user, err := cs.store.FindUserByID(ctx, id)
-// 	if err == db.ErrUserNotExist {
-// 		cs.logger.Error("No user present", "err", err.Error())
-// 		return response, errNoUserId
-// 	}
-// 	if err != nil {
-// 		cs.logger.Error("Error finding user", "err", err.Error(), "id", id)
-// 		return
-// 	}
+func (cs *transactionService) findByBookID(ctx context.Context, id string) (response findByBookIDResponse, err error) {
+	transaction, err := cs.store.FindTransactionByBookID(ctx, id)
+	if err == db.ErrTransactionNotExist {
+		cs.logger.Error("No user present", "err", err.Error())
+		return response, errNoUserId
+	}
+	if err != nil {
+		cs.logger.Error("Error finding user", "err", err.Error(), "id", id)
+		return
+	}
 
-// 	response.User = user
-// 	return
-// }
+	response.Transaction = transaction
+	return
+}
 
 func NewService(s db.Storer, l *zap.SugaredLogger) Service {
 	return &transactionService{

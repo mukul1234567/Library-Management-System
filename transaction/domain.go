@@ -20,9 +20,13 @@ type createRequest struct {
 	UserID     string `json:"user_id"`
 }
 
-// type findByIDResponse struct {
-// 	User db.User `json:"user"`
-// }
+type findByUserIDResponse struct {
+	Transaction db.Transaction `json:"transaction"`
+}
+
+type findByBookIDResponse struct {
+	Transaction db.Transaction `json:"transaction"`
+}
 
 type listResponse struct {
 	Transaction []db.Transaction `json:"transactions"`
@@ -47,4 +51,5 @@ func (ur updateRequest) Validate() (err error) {
 	}
 	return
 }
+
 //
