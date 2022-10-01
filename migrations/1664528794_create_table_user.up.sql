@@ -8,7 +8,7 @@ CREATE TABLE Users
   `age` INT NOT NULL,
   `address` VARCHAR(50) NOT NULL,
   `email` VARCHAR(30) NOT NULL,
-  `password` VARCHAR(20) NOT NULL,
+  `password` VARCHAR(150) NOT NULL,
   `mob_no` VARCHAR(50) NOT NULL,
   `role` VARCHAR(10) NOT NULL,
   PRIMARY KEY (id),
