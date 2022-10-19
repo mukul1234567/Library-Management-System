@@ -3,6 +3,9 @@ package db
 import (
 	"context"
 	"database/sql"
+	"fmt"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
@@ -18,13 +21,27 @@ type User struct {
 	Role      string `db:"role"`
 }
 
+type Userlist struct {
+	ID        string `db:"id"`
+	FirstName string `db:"first_name"`
+	LastName  string `db:"last_name"`
+	Gender    string `db:"gender"`
+	Address   string `db:"address"`
+	Age       int    `db:"age"`
+	Email     string `db:"email"`
+	MobileNum string `db:"mob_no"`
+	Role      string `db:"role"`
+}
+
 const (
 	createUserQuery = `INSERT INTO users (id,first_name, last_name, gender,age,address,email,password,mob_no,role)
 	VALUES(?, ?,?,?,?,?,?,?,?,?)`
-	listUsersQuery      = `SELECT id,first_name, last_name, gender,age,address,email,mob_no,role FROM users`
-	findUserByIDQuery   = `SELECT first_name, last_name, gender,age,address,email,mob_no,role FROM users WHERE id = ?`
-	deleteUserByIDQuery = `DELETE FROM users WHERE id = ?`
-	updateUserQuery     = `UPDATE users SET first_name=?, last_name=?, gender=?, age=?, address=?, password=?, mob_no=? where id = ?`
+	listUsersQuery          = `SELECT id,first_name, last_name, gender,age,address,email,password,mob_no,role FROM users`
+	showUsersQuery          = `SELECT id,first_name, last_name, gender,age,address,email,mob_no,role FROM users`
+	findUserByIDQuery       = `SELECT first_name, last_name, gender,age,address,email,mob_no,role FROM users WHERE id = ?`
+	deleteUserByIDQuery     = `DELETE FROM users WHERE id = ?`
+	updateUserQuery         = `UPDATE users SET first_name=?, last_name=?, gender=?, age=?, address=?, password=?, mob_no=? where id = ?`
+	updateUserPasswordQuery = `UPDATE users SET password = ? WHERE id =?`
 )
 
 func (s *store) CreateUser(ctx context.Context, user *User) (err error) {
@@ -39,7 +56,7 @@ func (s *store) CreateUser(ctx context.Context, user *User) (err error) {
 			user.Age,
 			user.Address,
 			user.Email,
-			user.Password,
+			HashPassword(user.Password),
 			user.MobileNum,
 			user.Role,
 		)
@@ -50,6 +67,16 @@ func (s *store) CreateUser(ctx context.Context, user *User) (err error) {
 func (s *store) ListUsers(ctx context.Context) (users []User, err error) {
 	err = WithDefaultTimeout(ctx, func(ctx context.Context) error {
 		return s.db.SelectContext(ctx, &users, listUsersQuery)
+	})
+	if err == sql.ErrNoRows {
+		return users, ErrUserNotExist
+	}
+	return
+}
+
+func (s *store) ShowUsers(ctx context.Context) (users []Userlist, err error) {
+	err = WithDefaultTimeout(ctx, func(ctx context.Context) error {
+		return s.db.SelectContext(ctx, &users, showUsersQuery)
 	})
 	if err == sql.ErrNoRows {
 		return users, ErrUserNotExist
@@ -98,6 +125,25 @@ func (s *store) UpdateUser(ctx context.Context, user *User) (err error) {
 		)
 		return err
 	})
+}
+
+func (s *store) UpdatePassword(ctx context.Context, user *User) (err error) {
+	// now := time.Now()
+
+	return Transact(ctx, s.db, &sql.TxOptions{}, func(ctx context.Context) error {
+		_, err = s.db.Exec(
+			updateUserPasswordQuery,
+			user.Password,
+			user.ID,
+		)
+		return err
+	})
+}
+
+func HashPassword(password string) string {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 10)
+	fmt.Println(err)
+	return string(bytes)
 }
 
 // CREATE TABLE Users
