@@ -12,7 +12,7 @@ import (
 func Create(service Service) http.HandlerFunc {
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		// api.Success(rw, http.StatusOK, api.Response{Message: "hi"})
-		var c createRequest
+		var c CreateRequest
 		err := json.NewDecoder(req.Body).Decode(&c)
 		if err != nil {
 			api.Error(rw, http.StatusBadRequest, api.Response{Message: err.Error()})
@@ -91,7 +91,7 @@ func DeleteByID(service Service) http.HandlerFunc {
 
 func Update(service Service) http.HandlerFunc {
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		var c updateRequest
+		var c UpdateRequest
 		err := json.NewDecoder(req.Body).Decode(&c)
 		if err != nil {
 			api.Error(rw, http.StatusBadRequest, api.Response{Message: err.Error()})
@@ -114,5 +114,5 @@ func Update(service Service) http.HandlerFunc {
 }
 
 func isBadRequest(err error) bool {
-	return err == errEmptyName || err == errEmptyID
+	return err == errEmptyName || err == errEmptyID 
 }
