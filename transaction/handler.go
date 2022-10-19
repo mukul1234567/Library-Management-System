@@ -11,7 +11,7 @@ import (
 func Create(service Service) http.HandlerFunc {
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		// api.Success(rw, http.StatusOK, api.Response{Message: "hi"})
-		var c createRequest
+		var c CreateRequest
 		resp, err1 := service.list(req.Context())
 		if err1 != nil {
 			api.Error(rw, http.StatusBadRequest, api.Response{Message: err1.Error()})
@@ -24,7 +24,7 @@ func Create(service Service) http.HandlerFunc {
 			return
 		}
 		for _, v := range resp.Transaction {
-			if v.BookID == c.BookID && v.UserID == c.UserID && v.ReturnDate == 0 {
+			if v.BookID == c.BookID && v.UserID == c.UserID && v.ReturnDate == "0" {
 				api.Error(rw, http.StatusBadRequest, api.Response{Message: "Book has already been issued by this user"})
 				return
 			}
@@ -84,9 +84,28 @@ func FindByBookID(service Service) http.HandlerFunc {
 	})
 }
 
+func FindByUserID(service Service) http.HandlerFunc {
+	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		vars := mux.Vars(req)
+
+		resp, err := service.findByUserID(req.Context(), vars["user_id"])
+
+		if err == errNoUserId {
+			api.Error(rw, http.StatusNotFound, api.Response{Message: err.Error()})
+			return
+		}
+		if err != nil {
+			api.Error(rw, http.StatusInternalServerError, api.Response{Message: err.Error()})
+			return
+		}
+
+		api.Success(rw, http.StatusOK, resp)
+	})
+}
+
 func Update(service Service) http.HandlerFunc {
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		var c updateRequest
+		var c UpdateRequest
 		err := json.NewDecoder(req.Body).Decode(&c)
 		if err != nil {
 			api.Error(rw, http.StatusBadRequest, api.Response{Message: err.Error()})
@@ -98,7 +117,7 @@ func Update(service Service) http.HandlerFunc {
 			return
 		}
 		for _, v := range resp.Transaction {
-			if v.BookID == c.BookID && v.UserID == c.UserID && v.ReturnDate != 0 {
+			if v.BookID == c.BookID && v.UserID == c.UserID && v.ReturnDate != "" {
 				api.Error(rw, http.StatusBadRequest, api.Response{Message: "Old Transactions cannot be updated"})
 				return
 			}
