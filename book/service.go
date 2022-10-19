@@ -10,10 +10,10 @@ import (
 
 type Service interface {
 	list(ctx context.Context) (response listResponse, err error)
-	create(ctx context.Context, req createRequest) (err error)
+	create(ctx context.Context, req CreateRequest) (err error)
 	findByID(ctx context.Context, id string) (response findByIDResponse, err error)
 	deleteByID(ctx context.Context, id string) (err error)
-	update(ctx context.Context, req updateRequest) (err error)
+	update(ctx context.Context, req UpdateRequest) (err error)
 }
 
 type bookService struct {
@@ -36,7 +36,7 @@ func (cs *bookService) list(ctx context.Context) (response listResponse, err err
 	return
 }
 
-func (cs *bookService) create(ctx context.Context, c createRequest) (err error) {
+func (cs *bookService) create(ctx context.Context, c CreateRequest) (err error) {
 	err = c.Validate()
 	if err != nil {
 		cs.logger.Errorw("Invalid request for book create", "msg", err.Error(), "book", c)
@@ -46,13 +46,13 @@ func (cs *bookService) create(ctx context.Context, c createRequest) (err error) 
 	c.ID = uuidgen.String()
 	err = cs.store.CreateBook(ctx, &db.Book{
 
-		ID:              c.ID,
-		Name:            c.Name,
-		Author:          c.Author,
-		Price:           c.Price,
-		TotalCopies:     c.TotalCopies,
-		Status:          c.Status,
-		AvailableCopies: c.AvailableCopies,
+		ID:          c.ID,
+		Name:        c.Name,
+		Author:      c.Author,
+		Price:       c.Price,
+		TotalCopies: c.TotalCopies,
+		Status:      c.Status,
+		// AvailableCopies: c.AvailableCopies,
 	})
 	// db.Availablecopiesval = c.AvailableCopies
 	// fmt.Println(c.AvailableCopies)
@@ -63,7 +63,7 @@ func (cs *bookService) create(ctx context.Context, c createRequest) (err error) 
 	return
 }
 
-func (cs *bookService) update(ctx context.Context, c updateRequest) (err error) {
+func (cs *bookService) update(ctx context.Context, c UpdateRequest) (err error) {
 	err = c.Validate()
 	if err != nil {
 		cs.logger.Error("Invalid Request for book update", "err", err.Error(), "book", c)
