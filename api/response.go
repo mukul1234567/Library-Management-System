@@ -10,6 +10,9 @@ import (
 type Response struct {
 	Message string `json:"message"`
 }
+type Response1 struct {
+	Message error `json:"message"`
+}
 
 func Error(rw http.ResponseWriter, status int, response interface{}) {
 	respBytes, err := json.Marshal(response)
