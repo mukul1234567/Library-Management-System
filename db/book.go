@@ -27,6 +27,7 @@ const (
 )
 
 func (s *store) CreateBook(ctx context.Context, book *Book) (err error) {
+	book.AvailableCopies=book.TotalCopies
 
 	return Transact(ctx, s.db, &sql.TxOptions{}, func(ctx context.Context) error {
 		_, err = s.db.Exec(
