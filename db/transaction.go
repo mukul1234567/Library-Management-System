@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"database/sql"
+
 	// "fmt"
 
 	// "fmt"
@@ -12,12 +13,21 @@ import (
 
 type Transaction struct {
 	ID         string `db:"id"`
-	IssueDate  int    `db:"issuedate"`
-	ReturnDate int    `db:"returndate"`
-	DueDate    int    `db:"duedate"`
+	IssueDate  string `db:"issuedate"`
+	ReturnDate string `db:"returndate"`
+	DueDate    string `db:"duedate"`
 	BookID     string `db:"book_id"`
 	UserID     string `db:"user_id"`
 }
+
+// type Transactionlist struct {
+// 	ID         string `db:"id"`
+// 	IssueDate  string `db:"issuedate"`
+// 	ReturnDate string `db:"returndate"`
+// 	DueDate    string `db:"duedate"`
+// 	BookID     string `db:"book_id"`
+// 	UserID     string `db:"user_id"`
+// }
 
 var Availablecopiesval int
 
@@ -27,15 +37,20 @@ const (
 	checkTransactionQuery        = `SELECT COUNT(*) FROM transactions WHERE book_id = ? AND user_id =? AND returndate=0`
 	listTransactionsQuery        = `SELECT * FROM transactions`
 	findTransactionByBookIDQuery = `SELECT * FROM transactions WHERE book_id = ?`
-	findTransactionByUserIDQuery = `SELECT FROM transactions WHERE user_id = ?`
+	findTransactionByUserIDQuery = `SELECT * FROM transactions WHERE user_id = ?`
 	updateTransactionQuery       = `UPDATE transactions SET returndate=? WHERE book_id = ? AND user_id =?`
 	issueCopiesQuery             = `UPDATE books SET availablecopies=availablecopies-1 WHERE id = ? AND availablecopies>0`
 	returnCopiesQuery            = `UPDATE books SET availablecopies=availablecopies+1 WHERE id = ?`
+	checkAvailabilityQuery       = `UPDATE books SET status= IF(availablecopies>0,"Available","Not Available") WHERE id=?`
 )
 
 func (s *store) CreateTransaction(ctx context.Context, transaction *Transaction) (err error) {
 	now := time.Now().UTC().Unix()
-	transaction.DueDate = int(now) + 864000
+	t := time.Unix(now, 0)
+	strnow := t.Format(time.UnixDate)
+	transactionduedate := int(now) + 864000
+	t = time.Unix(int64(transactionduedate), 0)
+	strduedate := t.Format(time.UnixDate)
 	return Transact(ctx, s.db, &sql.TxOptions{}, func(ctx context.Context) error {
 		// res, err := s.db.Exec(
 		// 	checkTransactionQuery,
@@ -53,19 +68,25 @@ func (s *store) CreateTransaction(ctx context.Context, transaction *Transaction)
 		_, err = s.db.Exec(
 			createTransactionQuery,
 			transaction.ID,
-			now,
-			transaction.DueDate,
-			0,
+			strnow,
+			strduedate,
+			"",
 			transaction.BookID,
 			transaction.UserID,
 		)
-		if err != nil {
-			return err
-		}
+
 		_, err := s.db.Exec(
 			issueCopiesQuery,
 			transaction.BookID,
 		)
+		if err != nil {
+			return err
+		}
+		_, err = s.db.Exec(
+			checkAvailabilityQuery,
+			transaction.BookID,
+		)
+
 		// cnt,err:=res.RowsAffected()
 		// if cnt!=0{
 		// 	api.Success(rw, http.StatusCreated, api.Response{Message: "Created Successfully"})
@@ -86,11 +107,12 @@ func (s *store) ListTransactions(ctx context.Context) (transactions []Transactio
 
 func (s *store) UpdateTransaction(ctx context.Context, transaction *Transaction) (err error) {
 	now := time.Now().UTC().Unix()
-
+	t := time.Unix(now, 0)
+	strnow := t.Format(time.UnixDate)
 	return Transact(ctx, s.db, &sql.TxOptions{}, func(ctx context.Context) error {
 		_, err = s.db.Exec(
 			updateTransactionQuery,
-			now,
+			strnow,
 			transaction.BookID,
 			transaction.UserID,
 		)
@@ -101,6 +123,13 @@ func (s *store) UpdateTransaction(ctx context.Context, transaction *Transaction)
 			returnCopiesQuery,
 			transaction.BookID,
 		)
+		if err != nil {
+			return err
+		}
+		_, err = s.db.Exec(
+			checkAvailabilityQuery,
+			transaction.BookID,
+		)
 		return err
 	})
 }
@@ -108,6 +137,16 @@ func (s *store) UpdateTransaction(ctx context.Context, transaction *Transaction)
 func (s *store) FindTransactionByBookID(ctx context.Context, bookid string) (transaction Transaction, err error) {
 	err = WithDefaultTimeout(ctx, func(ctx context.Context) error {
 		return s.db.GetContext(ctx, &transaction, findTransactionByBookIDQuery, bookid)
+	})
+	if err == sql.ErrNoRows {
+		return transaction, ErrTransactionNotExist
+	}
+	return
+}
+
+func (s *store) FindTransactionByUserID(ctx context.Context, userid string) (transaction Transaction, err error) {
+	err = WithDefaultTimeout(ctx, func(ctx context.Context) error {
+		return s.db.GetContext(ctx, &transaction, findTransactionByUserIDQuery, userid)
 	})
 	if err == sql.ErrNoRows {
 		return transaction, ErrTransactionNotExist
