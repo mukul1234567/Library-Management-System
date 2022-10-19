@@ -2,7 +2,7 @@ package book
 
 import "github.com/mukul1234567/Library-Management-System/db"
 
-type updateRequest struct {
+type UpdateRequest struct {
 	ID              string `json:"id"`
 	Name            string `json:"name"`
 	Author          string `json:"author"`
@@ -12,14 +12,14 @@ type updateRequest struct {
 	AvailableCopies int    `json:"availablecopies"`
 }
 
-type createRequest struct {
+type CreateRequest struct {
 	ID              string `json:"id"`
 	Name            string `json:"name"`
 	Author          string `json:"author"`
 	Price           int    `json:"price"`
 	TotalCopies     int    `json:"totalcopies"`
 	Status          string `json:"status"`
-	AvailableCopies int    `json:"availablecopies"`
+	// AvailableCopies int    `json:"availablecopies"`
 }
 
 type findByIDResponse struct {
@@ -30,14 +30,14 @@ type listResponse struct {
 	Book []db.Book `json:"books"`
 }
 
-func (cr createRequest) Validate() (err error) {
+func (cr CreateRequest) Validate() (err error) {
 	if cr.Name == "" {
 		return errEmptyName
 	}
 	return
 }
 
-func (ur updateRequest) Validate() (err error) {
+func (ur UpdateRequest) Validate() (err error) {
 	if ur.ID == "" {
 		return errEmptyID
 	}
