@@ -256,6 +256,7 @@ func FindByID(service Service) http.HandlerFunc {
 
 func DeleteByID(service Service) http.HandlerFunc {
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+
 		vars := mux.Vars(req)
 
 		err := service.DeleteByID(req.Context(), vars["id"])
@@ -266,7 +267,7 @@ func DeleteByID(service Service) http.HandlerFunc {
 			api.Error(rw, http.StatusInternalServerError, api.Response{Message: err.Error()})
 			return
 		}
-
+		
 		api.Success(rw, http.StatusOK, api.Response{Message: "Deleted Successfully"})
 	})
 }

@@ -9,11 +9,13 @@ import (
 )
 
 type Service interface {
-	list(ctx context.Context) (response listResponse, err error)
-	create(ctx context.Context, req createRequest) (err error)
-	findByID(ctx context.Context, id string) (response findByIDResponse, err error)
-	deleteByID(ctx context.Context, id string) (err error)
-	update(ctx context.Context, req updateRequest) (err error)
+	List(ctx context.Context) (response ListResponse, err error)
+	Show(ctx context.Context) (responser ListResponser, err error)
+	Create(ctx context.Context, req CreateRequest) (err error)
+	FindByID(ctx context.Context, id string) (response FindByIDResponse, err error)
+	DeleteByID(ctx context.Context, id string) (err error)
+	Update(ctx context.Context, req UpdateRequest) (err error)
+	UpdatePassword(ctx context.Context, req UpdatePasswordStruct) (err error)
 }
 
 type userService struct {
@@ -22,7 +24,7 @@ type userService struct {
 }
 
 // var userinfo []db.User
-func (cs *userService) list(ctx context.Context) (response listResponse, err error) {
+func (cs *userService) List(ctx context.Context) (response ListResponse, err error) {
 	users, err := cs.store.ListUsers(ctx)
 	if err == db.ErrUserNotExist {
 		cs.logger.Error("No user present", "err", err.Error())
@@ -38,12 +40,28 @@ func (cs *userService) list(ctx context.Context) (response listResponse, err err
 	return
 }
 
-func (cs *userService) create(ctx context.Context, c createRequest) (err error) {
-	err = c.Validate()
+func (cs *userService) Show(ctx context.Context) (responser ListResponser, err error) {
+	users, err := cs.store.ShowUsers(ctx)
+	if err == db.ErrUserNotExist {
+		cs.logger.Error("No user present", "err", err.Error())
+		return responser, errNoUsers
+	}
 	if err != nil {
-		cs.logger.Errorw("Invalid request for user create", "msg", err.Error(), "user", c)
+		cs.logger.Error("Error listing users", "err", err.Error())
 		return
 	}
+
+	responser.Users = users
+	// userinfo = users
+	return
+}
+
+func (cs *userService) Create(ctx context.Context, c CreateRequest) (err error) {
+	// err = c.Validate()
+	// if err != nil {
+	// 	cs.logger.Errorw("Invalid request for user create", "msg", err.Error(), "user", c)
+	// 	return
+	// }
 	uuidgen := uuid.New()
 	c.ID = uuidgen.String()
 	err = cs.store.CreateUser(ctx, &db.User{
@@ -66,13 +84,13 @@ func (cs *userService) create(ctx context.Context, c createRequest) (err error) 
 	return
 }
 
-func (cs *userService) update(ctx context.Context, c updateRequest) (err error) {
+func (cs *userService) Update(ctx context.Context, c UpdateRequest) (err error) {
 	err = c.Validate()
 	if err != nil {
 		cs.logger.Error("Invalid Request for user update", "err", err.Error(), "user", c)
 		return
 	}
-	
+
 	err = cs.store.UpdateUser(ctx, &db.User{
 		ID:        c.ID,
 		FirstName: c.FirstName,
@@ -94,7 +112,26 @@ func (cs *userService) update(ctx context.Context, c updateRequest) (err error) 
 	return
 }
 
-func (cs *userService) findByID(ctx context.Context, id string) (response findByIDResponse, err error) {
+func (cs *userService) UpdatePassword(ctx context.Context, c UpdatePasswordStruct) (err error) {
+	// err = c.Validate()
+	if err != nil {
+		cs.logger.Error("Invalid Request for user update", "err", err.Error(), "user", c)
+		return
+	}
+
+	err = cs.store.UpdatePassword(ctx, &db.User{
+		ID:       c.ID,
+		Password: c.NewPassword,
+	})
+	if err != nil {
+		cs.logger.Error("Error updating user", "err", err.Error(), "user", c)
+		return
+	}
+
+	return
+}
+
+func (cs *userService) FindByID(ctx context.Context, id string) (response FindByIDResponse, err error) {
 	user, err := cs.store.FindUserByID(ctx, id)
 	if err == db.ErrUserNotExist {
 		cs.logger.Error("No user present", "err", err.Error())
@@ -109,7 +146,7 @@ func (cs *userService) findByID(ctx context.Context, id string) (response findBy
 	return
 }
 
-func (cs *userService) deleteByID(ctx context.Context, id string) (err error) {
+func (cs *userService) DeleteByID(ctx context.Context, id string) (err error) {
 	err = cs.store.DeleteUserByID(ctx, id)
 	if err == db.ErrUserNotExist {
 		cs.logger.Error("user Not present", "err", err.Error(), "id", id)

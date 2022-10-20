@@ -22,12 +22,13 @@ func initRouter(dep dependencies) (router *mux.Router) {
 
 	//User
 	router.HandleFunc("/login", user.Login(dep.UserService)).Methods(http.MethodPost)
-
+	
 	router.HandleFunc("/users", user.Authorize(user.Create(dep.UserService), 1)).Methods(http.MethodPost)
-	router.HandleFunc("/users", user.Authorize(user.List(dep.UserService), 1)).Methods(http.MethodGet)
+	router.HandleFunc("/users", user.Authorize(user.Show(dep.UserService), 1)).Methods(http.MethodGet)
 	router.HandleFunc("/users/{id}", user.Authorize(user.FindByID(dep.UserService), 2)).Methods(http.MethodGet)
 	router.HandleFunc("/users/{id}", user.Authorize(user.DeleteByID(dep.UserService), 1)).Methods(http.MethodDelete)
 	router.HandleFunc("/users", user.Authorize(user.Update(dep.UserService), 2)).Methods(http.MethodPut)
+	router.HandleFunc("/users/reset", user.Authorize(user.UpdatePassword(dep.UserService), 2)).Methods(http.MethodPut)
 
 	//Book
 
@@ -42,7 +43,8 @@ func initRouter(dep dependencies) (router *mux.Router) {
 	router.HandleFunc("/book/issue", user.Authorize(transaction.Create(dep.TransactionService), 1)).Methods(http.MethodPost)
 	router.HandleFunc("/book", user.Authorize(transaction.List(dep.TransactionService), 1)).Methods(http.MethodGet)
 	router.HandleFunc("/book/return", user.Authorize(transaction.Update(dep.TransactionService), 1)).Methods(http.MethodPut)
-	router.HandleFunc("/book/{book_id}", user.Authorize(transaction.FindByBookID(dep.TransactionService), 1)).Methods(http.MethodGet)
+	router.HandleFunc("/book/bookid/{book_id}", user.Authorize(transaction.FindByBookID(dep.TransactionService), 1)).Methods(http.MethodGet)
+	router.HandleFunc("/book/userid/{user_id}", user.Authorize(transaction.FindByUserID(dep.TransactionService), 2)).Methods(http.MethodGet)
 
 	return
 }
@@ -50,3 +52,9 @@ func initRouter(dep dependencies) (router *mux.Router) {
 func pingHandler(rw http.ResponseWriter, req *http.Request) {
 	api.Success(rw, http.StatusOK, api.Response{Message: "pong"})
 }
+
+
+
+
+
+

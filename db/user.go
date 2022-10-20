@@ -19,6 +19,7 @@ type User struct {
 	Password  string `db:"password"`
 	MobileNum string `db:"mob_no"`
 	Role      string `db:"role"`
+	deleted   int
 }
 
 type Userlist struct {
@@ -97,6 +98,9 @@ func (s *store) FindUserByID(ctx context.Context, id string) (user User, err err
 func (s *store) DeleteUserByID(ctx context.Context, id string) (err error) {
 	return Transact(ctx, s.db, &sql.TxOptions{}, func(ctx context.Context) error {
 		res, err := s.db.Exec(deleteUserByIDQuery, id)
+		if err != nil {
+			return err
+		}
 		cnt, err := res.RowsAffected()
 		if cnt == 0 {
 			return ErrUserNotExist

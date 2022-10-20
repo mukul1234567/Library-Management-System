@@ -14,10 +14,11 @@ import (
 
 type Service interface {
 	list(ctx context.Context) (response listResponse, err error)
-	create(ctx context.Context, req createRequest) (err error)
+	create(ctx context.Context, req CreateRequest) (err error)
 	findByBookID(ctx context.Context, id string) (response findByBookIDResponse, err error)
+	findByUserID(ctx context.Context, id string) (response findByUserIDResponse, err error)
 	// deleteByID(ctx context.Context, id string) (err error)
-	update(ctx context.Context, req updateRequest) (err error)
+	update(ctx context.Context, req UpdateRequest) (err error)
 }
 
 type transactionService struct {
@@ -41,7 +42,7 @@ func (cs *transactionService) list(ctx context.Context) (response listResponse, 
 	return
 }
 
-func (cs *transactionService) create(ctx context.Context, c createRequest) (err error) {
+func (cs *transactionService) create(ctx context.Context, c CreateRequest) (err error) {
 	err = c.Validate()
 	if err != nil {
 		cs.logger.Errorw("Invalid request for transaction create", "msg", err.Error(), "transaction", c)
@@ -66,7 +67,7 @@ func (cs *transactionService) create(ctx context.Context, c createRequest) (err 
 	return
 }
 
-func (cs *transactionService) update(ctx context.Context, c updateRequest) (err error) {
+func (cs *transactionService) update(ctx context.Context, c UpdateRequest) (err error) {
 	err = c.Validate()
 	if err != nil {
 		cs.logger.Error("Invalid Request for user update", "err", err.Error(), "user", c)
@@ -91,6 +92,21 @@ func (cs *transactionService) update(ctx context.Context, c updateRequest) (err 
 
 func (cs *transactionService) findByBookID(ctx context.Context, id string) (response findByBookIDResponse, err error) {
 	transaction, err := cs.store.FindTransactionByBookID(ctx, id)
+	if err == db.ErrTransactionNotExist {
+		cs.logger.Error("No user present", "err", err.Error())
+		return response, errNoUserId
+	}
+	if err != nil {
+		cs.logger.Error("Error finding user", "err", err.Error(), "id", id)
+		return
+	}
+
+	response.Transaction = transaction
+	return
+}
+
+func (cs *transactionService) findByUserID(ctx context.Context, id string) (response findByUserIDResponse, err error) {
+	transaction, err := cs.store.FindTransactionByUserID(ctx, id)
 	if err == db.ErrTransactionNotExist {
 		cs.logger.Error("No user present", "err", err.Error())
 		return response, errNoUserId

@@ -24,7 +24,7 @@ func Create(service Service) http.HandlerFunc {
 			return
 		}
 		for _, v := range resp.Transaction {
-			if v.BookID == c.BookID && v.UserID == c.UserID && v.ReturnDate == "0" {
+			if v.BookID == c.BookID && v.UserID == c.UserID && v.ReturnDate == "" {
 				api.Error(rw, http.StatusBadRequest, api.Response{Message: "Book has already been issued by this user"})
 				return
 			}
@@ -119,7 +119,7 @@ func Update(service Service) http.HandlerFunc {
 		for _, v := range resp.Transaction {
 			if v.BookID == c.BookID && v.UserID == c.UserID && v.ReturnDate != "" {
 				api.Error(rw, http.StatusBadRequest, api.Response{Message: "Old Transactions cannot be updated"})
-				return
+
 			}
 
 		}
